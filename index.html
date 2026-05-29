@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>vocab.br</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f564;
+    --accent2: #64c8f5;
+    --text: #f0ece4;
+    --text-muted: #6b6b6b;
+    --text-dim: #3a3a3a;
+    --red: #f56464;
+    --yellow: #f5c864;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+
+  header {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--accent); }
+
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .stat-val { color: var(--accent); font-weight: 500; }
+
+  .nav {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .nav-btn.active { background: var(--accent); color: #0e0e0e; font-weight: 500; }
+  .nav-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+  .screen { display: none; width: 100%; max-width: 700px; }
+  .screen.active { display: block; }
+
+  .input-group { display: flex; gap: 8px; margin-bottom: 16px; }
+  .input-wrap { flex: 1; position: relative; }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--text-dim); }
+
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+  }
+  .btn-accent { background: var(--accent); color: #0e0e0e; }
+  .btn-accent:hover { background: #d4f772; transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+  .pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .pending-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .pending-item .word-en { font-size: 0.85rem; color: var(--text); flex: 1; }
+  .pending-item .word-pt { font-size: 0.85rem; color: var(--accent2); flex: 1; }
+  .pending-item .remove-btn {
+    background: none; border: none; color: var(--text-dim);
+    cursor: pointer; font-size: 1rem; padding: 0 4px;
+    transition: color 0.15s;
+  }
+  .pending-item .remove-btn:hover { color: var(--red); }
+
+  .ai-loading {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+  }
+  .ai-loading.show { display: flex; }
+  .dot-pulse { display: flex; gap: 4px; }
+  .dot-pulse span {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+  .section-label {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 8px;
+  }
+
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .quiz-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .quiz-progress-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
+  }
+  .quiz-word {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 300;
+    margin-bottom: 8px;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .quiz-hint { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 28px; }
+
+  .quiz-input-wrap {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .quiz-input-wrap input { width: 280px; text-align: center; font-size: 1rem; }
+
+  .feedback-box {
+    display: none;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    font-size: 0.85rem;
+    animation: fadeIn 0.25s ease;
+  }
+  .feedback-box.correct { display: block; background: #c8f56415; border: 1px solid var(--accent); color: var(--accent); }
+  .feedback-box.wrong { display: block; background: #f5646415; border: 1px solid var(--red); color: var(--red); }
+  .feedback-box.show-answer { display: block; background: #f5c86415; border: 1px solid var(--yellow); color: var(--yellow); }
+  .feedback-detail { font-size: 0.75rem; margin-top: 6px; opacity: 0.8; }
+
+  .quiz-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+  .wordlist-filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn.active { background: var(--accent); color: #0e0e0e; border-color: var(--accent); font-weight: 500; }
+  .filter-btn:hover:not(.active) { border-color: var(--text-muted); color: var(--text); }
+
+  .word-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    transition: border-color 0.15s;
+  }
+  .word-row:hover { border-color: var(--text-dim); }
+  .word-row .en { flex: 1; font-size: 0.82rem; }
+  .word-row .pt { flex: 1; font-size: 0.82rem; color: var(--accent2); }
+  .status-pill {
+    font-size: 0.65rem;
+    padding: 3px 9px;
+    border-radius: 12px;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .status-new { background: #3a2a0a; color: var(--yellow); }
+  .status-learning { background: #0a2a3a; color: var(--accent2); }
+  .status-learned { background: #1a2a0a; color: var(--accent); }
+  .streak-dots { display: flex; gap: 3px; }
+  .streak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); }
+  .streak-dot.filled { background: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.8;
+  }
+  .empty-state .big { font-family: 'Fraunces', serif; font-size: 2rem; color: var(--text-dim); margin-bottom: 8px; }
+
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .summary-title { font-family: 'Fraunces', serif; font-size: 1.8rem; margin-bottom: 8px; }
+  .summary-score { font-size: 3rem; font-weight: 500; color: var(--accent); margin: 16px 0; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 20px 0; }
+  .summary-stat { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+  .summary-stat-val { font-size: 1.4rem; color: var(--accent); font-weight: 500; }
+  .summary-stat-label { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+  .progress-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; margin: 8px 0; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s ease; }
+
+  select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: var(--accent); }
+
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">vocab<span>.br</span></div>
+  <div class="stats-bar">
+    <span><span class="stat-val" id="hdr-total">0</span> palavras</span>
+    <span><span class="stat-val" id="hdr-learned">0</span> aprendidas</span>
+    <span>🔥 <span class="stat-val" id="hdr-streak">0</span> dias</span>
+  </div>
+</header>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showScreen('add',this)">+ ADICIONAR</button>
+  <button class="nav-btn" onclick="showScreen('quiz',this)">REVISAR</button>
+  <button class="nav-btn" onclick="showScreen('list',this)">LISTA</button>
+</div>
+
+<!-- ADD SCREEN -->
+<div class="screen active" id="screen-add">
+  <div class="info-box">
+    Digite uma palavra em inglês ou português. O app identifica automaticamente, corrige a ortografia e adiciona à sua lista.
+  </div>
+  <div class="input-group">
+    <div class="input-wrap">
+      <input type="text" id="word-input" placeholder="ex: saudade, heartbreak, madrugada..."
+        onkeydown="if(event.key==='Enter') addWord()" />
+    </div>
+    <button class="btn btn-accent" onclick="addWord()">ADD</button>
+  </div>
+  <div class="ai-loading" id="ai-loading">
+    <div class="dot-pulse"><span></span><span></span><span></span></div>
+    <span>verificando com IA...</span>
+  </div>
+  <div id="pending-section" style="display:none">
+    <div class="section-label">Palavras para adicionar</div>
+    <div class="pending-list" id="pending-list"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-accent" onclick="savePending()">SALVAR TUDO</button>
+      <button class="btn btn-ghost" onclick="clearPending()">LIMPAR</button>
+    </div>
+  </div>
+  <div style="height:24px"></div>
+  <div class="section-label">Adicionadas hoje</div>
+  <div id="today-list"></div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div class="screen" id="screen-quiz">
+  <div id="quiz-setup">
+    <div class="info-box">
+      Acerte uma palavra por <strong style="color:var(--accent)">3 dias diferentes</strong> para marcá-la como aprendida. Errou? O streak reinicia.
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+      <select id="quiz-filter">
+        <option value="due">Pendentes (recomendado)</option>
+        <option value="all">Todas as palavras</option>
+        <option value="learning">Aprendendo</option>
+        <option value="new">Novas</option>
+      </select>
+      <select id="quiz-direction">
+        <option value="en-pt">Inglês → Português</option>
+        <option value="pt-en">Português → Inglês</option>
+        <option value="mixed">Direção aleatória</option>
+      </select>
+    </div>
+    <button class="btn btn-accent" onclick="startQuiz()" style="width:100%;padding:14px">INICIAR REVISÃO</button>
+    <div id="quiz-due-info" style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);text-align:center"></div>
+  </div>
+
+  <div id="quiz-active" style="display:none">
+    <div class="quiz-card">
+      <div class="quiz-progress-label">
+        <span id="q-current">1</span> / <span id="q-total">30</span>
+        &nbsp;&nbsp;
+        <span style="color:var(--accent)" id="q-correct-count">✓ 0</span>
+        &nbsp;
+        <span style="color:var(--red)" id="q-wrong-count">✗ 0</span>
+      </div>
+      <div class="progress-bar-wrap" style="margin-bottom:24px">
+        <div class="progress-bar" id="q-progress-bar" style="width:0%"></div>
+      </div>
+      <div class="quiz-word" id="q-word">—</div>
+      <div class="quiz-hint" id="q-hint">traduz para português</div>
+      <div class="quiz-input-wrap">
+        <input type="text" id="q-input" placeholder="sua resposta..."
+          onkeydown="if(event.key==='Enter') checkAnswer()" />
+        <button class="btn btn-accent" onclick="checkAnswer()">→</button>
+      </div>
+      <div class="feedback-box" id="q-feedback"></div>
+      <div class="quiz-actions">
+        <button class="btn btn-ghost" id="btn-skip" onclick="skipWord()">PULAR</button>
+        <button class="btn btn-ghost" id="btn-show" onclick="showAnswer()">VER RESPOSTA</button>
+        <button class="btn btn-ghost" id="btn-next" onclick="nextWord()" style="display:none">PRÓXIMA →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="quiz-summary" style="display:none"></div>
+</div>
+
+<!-- WORD LIST SCREEN -->
+<div class="screen" id="screen-list">
+  <div class="wordlist-filters">
+    <button class="filter-btn active" onclick="filterList('all',this)">TODAS</button>
+    <button class="filter-btn" onclick="filterList('new',this)">NOVAS</button>
+    <button class="filter-btn" onclick="filterList('learning',this)">APRENDENDO</button>
+    <button class="filter-btn" onclick="filterList('learned',this)">APRENDIDAS</button>
+  </div>
+  <div id="word-list-container"></div>
+</div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let state = {
+  words: [],
+  pending: [],
+  quizSession: null,
+  streak: 0,
+  lastQuizDate: null
+};
+
+function loadState() {
+  try {
+    const s = localStorage.getItem('vocabbr_v2');
+    if (s) state = Object.assign({}, state, JSON.parse(s));
+  } catch(e) {}
+  renderAll();
+}
+
+function saveState() {
+  try { localStorage.setItem('vocabbr_v2', JSON.stringify(state)); } catch(e) {}
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ─── CLAUDE API (via proxy) ──────────────────────────────────────────────────
+async function callClaude(prompt, systemPrompt, maxTokens) {
+  const resp = await fetch("/api/claude", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: maxTokens || 300,
+      system: systemPrompt || "You are a Brazilian Portuguese expert. Return only valid JSON, no markdown backticks.",
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+  const data = await resp.json();
+  const text = (data.content && data.content[0] && data.content[0].text) || '{}';
+  try {
+    return JSON.parse(text.replace(/```json|```/g, '').trim());
+  } catch(e) { return null; }
+}
+
+async function translateWord(word) {
+  const ptPattern = /[ãõáéíóúâêôàçü]|ção|ões|mente$|inho$|inha$/i;
+  const lang = ptPattern.test(word) ? 'pt' : 'en';
+
+  const prompt = lang === 'en'
+    ? `Translate English word/phrase "${word}" to Brazilian Portuguese. Return JSON only: {"en":"${word}","pt":"translation","note":"short usage tip max 8 words, in English"}`
+    : `Translate Portuguese word/phrase "${word}" to English. Correct any spelling errors first. Return JSON only: {"en":"english translation","pt":"corrected portuguese","note":"short usage tip max 8 words, in English"}`;
+
+  return await callClaude(prompt, "Brazilian Portuguese language expert. Return ONLY valid JSON without any markdown.", 200);
+}
+
+async function evaluateAnswer(question, direction, correctAnswer, userAnswer) {
+  const prompt = `Brazilian Portuguese student learning exercise.
+Prompt shown: "${question}" (${direction === 'en-pt' ? 'English, student must answer in Portuguese' : 'Portuguese, student must answer in English'})
+Expected answer: "${correctAnswer}"
+Student wrote: "${userAnswer}"
+
+Accept slight accent variations or synonyms. Return JSON: {"correct":true/false,"feedback":"brief feedback in Portuguese, max 8 words","correction":"exact correct form if wrong, else null"}`;
+
+  const result = await callClaude(prompt, "Language tutor. Return ONLY valid JSON.", 150);
+  return result || { correct: false, feedback: "Resposta incorreta.", correction: correctAnswer };
+}
+
+// ─── ADD WORDS ───────────────────────────────────────────────────────────────
+async function addWord() {
+  const input = document.getElementById('word-input');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const exists = state.words.some(w =>
+    w.en.toLowerCase() === val.toLowerCase() ||
+    w.pt.toLowerCase() === val.toLowerCase()
+  );
+  if (exists) { showToast('"' + val + '" já está na sua lista'); return; }
+
+  const inPending = state.pending.some(w =>
+    (w.en && w.en.toLowerCase() === val.toLowerCase()) ||
+    (w.pt && w.pt.toLowerCase() === val.toLowerCase())
+  );
+  if (inPending) { showToast('Já na fila...'); return; }
+
+  input.value = '';
+  document.getElementById('ai-loading').classList.add('show');
+
+  const result = await translateWord(val);
+  document.getElementById('ai-loading').classList.remove('show');
+
+  if (!result || !result.en || !result.pt) {
+    showToast('Erro ao processar. Tente novamente.'); return;
+  }
+
+  state.pending.push({ ...result, id: Date.now() + Math.random() });
+  renderPending();
+  document.getElementById('word-input').focus();
+}
+
+function renderPending() {
+  const list = document.getElementById('pending-list');
+  const section = document.getElementById('pending-section');
+  if (!state.pending.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = state.pending.map(function(w, i) {
+    return '<div class="pending-item">'
+      + '<span class="word-en">' + w.en + '</span>'
+      + '<span style="color:var(--text-dim);font-size:0.7rem">→</span>'
+      + '<span class="word-pt">' + w.pt + '</span>'
+      + (w.note ? '<span style="font-size:0.65rem;color:var(--text-muted);flex:1">' + w.note + '</span>' : '')
+      + '<button class="remove-btn" onclick="removePending(' + i + ')">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+function removePending(i) {
+  state.pending.splice(i, 1);
+  renderPending();
+}
+
+function savePending() {
+  const today = todayStr();
+  state.pending.forEach(function(w) {
+    state.words.push({
+      id: w.id,
+      en: w.en,
+      pt: w.pt,
+      note: w.note || '',
+      status: 'new',
+      streakDays: [],
+      addedDate: today,
+      lastAsked: null
+    });
+  });
+  const count = state.pending.length;
+  state.pending = [];
+  saveState();
+  renderPending();
+  renderToday();
+  renderHeader();
+  showToast('✓ ' + count + ' palavra(s) salva(s)!');
+}
+
+function clearPending() {
+  state.pending = [];
+  renderPending();
+}
+
+function renderToday() {
+  const today = todayStr();
+  const todayWords = state.words.filter(function(w) { return w.addedDate === today; });
+  const el = document.getElementById('today-list');
+  if (!todayWords.length) {
+    el.innerHTML = '<div style="font-size:0.75rem;color:var(--text-dim);padding:8px 0">Nenhuma palavra adicionada hoje ainda.</div>';
+    return;
+  }
+  el.innerHTML = todayWords.map(function(w) {
+    return '<div class="word-row">'
+      + '<span class="en">' + w.en + '</span>'
+      + '<span style="color:var(--text-dim);font-size:0.7rem">→</span>'
+      + '<span class="pt">' + w.pt + '</span>'
+      + '<span class="status-pill status-' + w.status + '">' + w.status.toUpperCase() + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+// ─── QUIZ ────────────────────────────────────────────────────────────────────
+function getDueWords() {
+  return state.words.filter(function(w) { return w.status !== 'learned'; });
+}
+
+function startQuiz() {
+  const filter = document.getElementById('quiz-filter').value;
+  let pool;
+  if (filter === 'due') pool = getDueWords();
+  else if (filter === 'learning') pool = state.words.filter(function(w) { return w.status === 'learning'; });
+  else if (filter === 'new') pool = state.words.filter(function(w) { return w.status === 'new'; });
+  else pool = state.words.filter(function(w) { return w.status !== 'learned'; });
+
+  if (!pool.length) { showToast('Nenhuma palavra para revisar!'); return; }
+
+  const shuffled = pool.slice().sort(function() { return Math.random() - 0.5; }).slice(0, 30);
+  const dir = document.getElementById('quiz-direction').value;
+
+  state.quizSession = {
+    words: shuffled,
+    current: 0,
+    correct: 0,
+    wrong: 0,
+    direction: dir,
+    currentDir: dir,
+    results: []
+  };
+
+  document.getElementById('quiz-setup').style.display = 'none';
+  document.getElementById('quiz-summary').style.display = 'none';
+  document.getElementById('quiz-active').style.display = 'block';
+  renderQuizCard();
+}
+
+function renderQuizCard() {
+  const s = state.quizSession;
+  const word = s.words[s.current];
+  const dir = s.direction === 'mixed' ? (Math.random() > 0.5 ? 'en-pt' : 'pt-en') : s.direction;
+  s.currentDir = dir;
+
+  document.getElementById('q-current').textContent = s.current + 1;
+  document.getElementById('q-total').textContent = s.words.length;
+  document.getElementById('q-correct-count').textContent = '✓ ' + s.correct;
+  document.getElementById('q-wrong-count').textContent = '✗ ' + s.wrong;
+  document.getElementById('q-progress-bar').style.width = ((s.current / s.words.length) * 100) + '%';
+  document.getElementById('q-word').textContent = dir === 'en-pt' ? word.en : word.pt;
+  document.getElementById('q-hint').textContent = dir === 'en-pt' ? 'traduz para português' : 'translate to english';
+  document.getElementById('q-input').value = '';
+  document.getElementById('q-input').focus();
+
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback-box';
+  fb.innerHTML = '';
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('btn-skip').style.display = 'inline-block';
+  document.getElementById('btn-show').style.display = 'inline-block';
+}
+
+async function checkAnswer() {
+  const s = state.quizSession;
+  if (!s) return;
+  const userAnswer = document.getElementById('q-input').value.trim();
+  if (!userAnswer) return;
+
+  const word = s.words[s.current];
+  const correctAnswer = s.currentDir === 'en-pt' ? word.pt : word.en;
+  const fb = document.getElementById('q-feedback');
+
+  const normalize = function(str) {
+    return str.toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  };
+
+  if (normalize(userAnswer) === normalize(correctAnswer)) {
+    fb.className = 'feedback-box correct';
+    fb.innerHTML = '✓ Correto!' + (word.note ? '<div class="feedback-detail">' + word.note + '</div>' : '');
+    recordResult(true);
+    showNextBtn();
+  } else {
+    fb.className = 'feedback-box';
+    fb.innerHTML = '<span style="color:var(--text-muted);font-size:0.75rem">verificando...</span>';
+
+    const result = await evaluateAnswer(
+      s.currentDir === 'en-pt' ? word.en : word.pt,
+      s.currentDir,
+      correctAnswer,
+      userAnswer
+    );
+
+    if (result && result.correct) {
+      fb.className = 'feedback-box correct';
+      fb.innerHTML = '✓ ' + (result.feedback || 'Correto!') + '<div class="feedback-detail">Aceito: ' + correctAnswer + '</div>';
+      recordResult(true);
+    } else {
+      fb.className = 'feedback-box wrong';
+      fb.innerHTML = '✗ ' + ((result && result.feedback) || 'Incorreto.') + '<div class="feedback-detail">Correto: <strong>' + ((result && result.correction) || correctAnswer) + '</strong></div>';
+      recordResult(false);
+    }
+    showNextBtn();
+  }
+}
+
+function showNextBtn() {
+  document.getElementById('btn-next').style.display = 'inline-block';
+  document.getElementById('btn-skip').style.display = 'none';
+  document.getElementById('btn-show').style.display = 'none';
+}
+
+function showAnswer() {
+  const s = state.quizSession;
+  const word = s.words[s.current];
+  const correctAnswer = s.currentDir === 'en-pt' ? word.pt : word.en;
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback-box show-answer';
+  fb.innerHTML = 'Resposta: <strong>' + correctAnswer + '</strong>' + (word.note ? '<div class="feedback-detail">' + word.note + '</div>' : '');
+  recordResult(false);
+  showNextBtn();
+}
+
+function skipWord() {
+  nextWord();
+}
+
+function recordResult(correct) {
+  const s = state.quizSession;
+  s.results.push({ wordId: s.words[s.current].id, correct: correct });
+  if (correct) s.correct++; else s.wrong++;
+  document.getElementById('q-correct-count').textContent = '✓ ' + s.correct;
+  document.getElementById('q-wrong-count').textContent = '✗ ' + s.wrong;
+}
+
+function nextWord() {
+  const s = state.quizSession;
+  s.current++;
+  if (s.current >= s.words.length) finishQuiz();
+  else renderQuizCard();
+}
+
+function finishQuiz() {
+  const s = state.quizSession;
+  const today = todayStr();
+
+  s.results.forEach(function(r) {
+    const word = state.words.find(function(w) { return w.id === r.wordId; });
+    if (!word) return;
+
+    if (r.correct) {
+      if (!word.streakDays.includes(today)) word.streakDays.push(today);
+      const uniqueDays = word.streakDays.filter(function(v, i, a) { return a.indexOf(v) === i; }).sort().slice(-3);
+      word.streakDays = uniqueDays;
+      word.status = uniqueDays.length >= 3 ? 'learned' : 'learning';
+    } else {
+      word.streakDays = [];
+      word.status = word.status === 'learned' ? 'learning' : (word.status === 'new' ? 'new' : 'learning');
+    }
+    word.lastAsked = today;
+  });
+
+  if (state.lastQuizDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    state.streak = state.lastQuizDate === yesterday ? (state.streak || 0) + 1 : 1;
+    state.lastQuizDate = today;
+  }
+
+  saveState();
+  renderAll();
+  showQuizSummary();
+}
+
+function showQuizSummary() {
+  const s = state.quizSession;
+  const total = s.results.length;
+  const pct = total > 0 ? Math.round((s.correct / total) * 100) : 0;
+  const newlyLearned = s.results.filter(function(r) {
+    const w = state.words.find(function(x) { return x.id === r.wordId; });
+    return w && w.status === 'learned';
+  }).length;
+
+  document.getElementById('quiz-active').style.display = 'none';
+  const summary = document.getElementById('quiz-summary');
+  summary.style.display = 'block';
+  const emoji = pct >= 90 ? '🎉' : pct >= 70 ? '💪' : pct >= 50 ? '📚' : '🔄';
+
+  summary.innerHTML = '<div class="summary-card">'
+    + '<div class="summary-title">' + emoji + ' Sessão concluída!</div>'
+    + '<div class="summary-score">' + pct + '%</div>'
+    + '<div class="summary-grid">'
+    + '<div class="summary-stat"><div class="summary-stat-val" style="color:var(--accent)">' + s.correct + '</div><div class="summary-stat-label">CORRETAS</div></div>'
+    + '<div class="summary-stat"><div class="summary-stat-val" style="color:var(--red)">' + s.wrong + '</div><div class="summary-stat-label">ERRADAS</div></div>'
+    + '<div class="summary-stat"><div class="summary-stat-val" style="color:var(--yellow)">' + newlyLearned + '</div><div class="summary-stat-label">APRENDIDAS HOJE</div></div>'
+    + '</div>'
+    + '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:20px">🔥 Sequência atual: <strong style="color:var(--yellow)">' + (state.streak || 0) + ' dia(s)</strong></div>'
+    + '<button class="btn btn-accent" onclick="resetQuiz()" style="width:100%;padding:12px">NOVA SESSÃO</button>'
+    + '</div>';
+}
+
+function resetQuiz() {
+  state.quizSession = null;
+  document.getElementById('quiz-summary').style.display = 'none';
+  document.getElementById('quiz-setup').style.display = 'block';
+  renderQuizDueInfo();
+}
+
+function renderQuizDueInfo() {
+  const due = getDueWords();
+  const el = document.getElementById('quiz-due-info');
+  if (el) el.textContent = due.length + ' palavra(s) para revisar';
+}
+
+// ─── WORD LIST ────────────────────────────────────────────────────────────────
+var listFilter = 'all';
+function filterList(f, btn) {
+  listFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  renderWordList();
+}
+
+function renderWordList() {
+  const el = document.getElementById('word-list-container');
+  let words = state.words.slice();
+  if (listFilter !== 'all') words = words.filter(function(w) { return w.status === listFilter; });
+  words.sort(function(a, b) { return new Date(b.addedDate) - new Date(a.addedDate); });
+
+  if (!words.length) {
+    el.innerHTML = '<div class="empty-state"><div class="big">∅</div>Nenhuma palavra aqui.<br>Adicione palavras na aba "+ ADICIONAR".</div>';
+    return;
+  }
+
+  el.innerHTML = words.map(function(w) {
+    const dots = [0,1,2].map(function(i) {
+      return '<div class="streak-dot ' + (i < w.streakDays.length ? 'filled' : '') + '"></div>';
+    }).join('');
+    return '<div class="word-row">'
+      + '<span class="en">' + w.en + '</span>'
+      + '<span style="color:var(--text-dim);font-size:0.7rem">→</span>'
+      + '<span class="pt">' + w.pt + '</span>'
+      + '<div class="streak-dots" title="' + w.streakDays.length + '/3">' + dots + '</div>'
+      + '<span class="status-pill status-' + w.status + '">' + w.status.toUpperCase() + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderHeader();
+  renderToday();
+  renderPending();
+  renderWordList();
+  renderQuizDueInfo();
+}
+
+function renderHeader() {
+  document.getElementById('hdr-total').textContent = state.words.length;
+  document.getElementById('hdr-learned').textContent = state.words.filter(function(w) { return w.status === 'learned'; }).length;
+  document.getElementById('hdr-streak').textContent = state.streak || 0;
+}
+
+function showScreen(name, btn) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('screen-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'list') renderWordList();
+  if (name === 'quiz') renderQuizDueInfo();
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1e1e;border:1px solid #3a3a3a;color:#f0ece4;padding:10px 20px;border-radius:8px;font-size:0.78rem;font-family:DM Mono,monospace;z-index:999;white-space:nowrap;animation:fadeIn 0.2s ease';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2500);
+}
+
+loadState();
+</script>
+</body>
+</html>
